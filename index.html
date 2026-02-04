@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متجر المبدعين | النسخة الاحترافية</title>
+    <title>جاري التحميل...</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -19,21 +19,19 @@
         body { 
             font-family: 'Cairo', sans-serif; background: #080808; color: white; margin: 0; 
             padding-bottom: 50px; background-size: cover; background-attachment: fixed; background-position: center; 
-            transition: background 0.5s ease-in-out;
         }
 
         header { 
             height: 30vh; margin: 15px; border-radius: 25px;
-            background-color: #111; /* لون مؤقت بديل للصورة */
-            background-size: cover; background-position: center; border: 1px solid var(--glass-border); 
-            backdrop-filter: blur(10px); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            background-color: #111; background-size: cover; background-position: center; 
+            border: 1px solid var(--glass-border); backdrop-filter: blur(10px); 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
         }
 
         .logo { font-family: 'Dancing Script', cursive; font-size: clamp(2rem, 6vw, 3.5rem); color: var(--pink); margin: 0; text-shadow: 0 0 15px var(--pink); }
         .slogan { color: var(--gold); font-size: 1rem; margin-top: 5px; }
 
         .container { padding: 10px 3%; }
-        
         .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
         @media (min-width: 768px) { .menu-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); } }
 
@@ -52,11 +50,10 @@
         .img-box { width: 100%; aspect-ratio: 1/1; cursor: zoom-in; position: relative; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* ملصق الخصم الجديد */
         .discount-badge {
             position: absolute; top: 10px; left: 10px; background: red; color: white;
             padding: 2px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: bold;
-            z-index: 10; box-shadow: 0 0 10px rgba(255,0,0,0.5);
+            z-index: 10;
         }
 
         .card-info { padding: 10px; text-align: center; }
@@ -98,8 +95,7 @@
 
 <div class="container">
     <div id="adminDashboard">
-        <h3 style="text-align:center; color:var(--pink);">⚙️ لوحة التحكم الكاملة</h3>
-        
+        <h3 style="text-align:center; color:var(--pink);">⚙️ لوحة التحكم</h3>
         <div class="form-section">
             <input type="text" id="newBrand" placeholder="اسم المتجر">
             <input type="text" id="newSlogan" placeholder="شعار المتجر">
@@ -115,29 +111,22 @@
             <input type="file" id="bodyFile" accept="image/*" style="display:none" onchange="previewBody()">
             <button class="btn" style="background:var(--pink); color:white" onclick="updateSettings()">حفظ بيانات المتجر</button>
         </div>
-
         <hr style="border-top:1px solid #333; margin:20px 0;">
-
         <div class="form-section">
-            <label>إضافة منتج جديد:</label>
             <button class="btn" style="background:#444; color:white" onclick="document.getElementById('imgUpload').click()">اختيار صورة المنتج</button>
             <input type="file" id="imgUpload" accept="image/*" style="display:none" onchange="previewImg()">
             <input type="text" id="pName" placeholder="اسم المنتج">
             <input type="text" id="pCode" placeholder="رمز المنتج">
-            <input type="number" id="pPrice" placeholder="السعر قبل الخصم">
-            <input type="number" id="pDisc" placeholder="نسبة الخصم % (مثلاً 20)">
+            <input type="number" id="pPrice" placeholder="السعر">
+            <input type="number" id="pDisc" placeholder="نسبة الخصم %">
             <button class="btn" style="background:var(--gold)" onclick="addProduct()">رفع المنتج</button>
         </div>
-
         <hr style="border-top:1px solid #333; margin:20px 0;">
-
         <div class="form-section">
-            <label>إعدادات الأمان:</label>
-            <input type="password" id="newPassInput" placeholder="اكتبي الباسورد الجديد هنا">
-            <button class="btn" style="background:#555; color:white" onclick="changeAdminPass()">تحديث باسورد الدخول</button>
+            <input type="password" id="newPassInput" placeholder="الباسورد الجديد">
+            <button class="btn" style="background:#555; color:white" onclick="changeAdminPass()">تحديث الباسورد</button>
         </div>
-
-        <button class="btn" style="background:#222; color:white; margin-top:20px;" onclick="location.reload()">إغلاق اللوحة</button>
+        <button class="btn" style="background:#222; color:white; margin-top:20px;" onclick="location.reload()">إغلاق وحفظ</button>
     </div>
 
     <div id="menuGrid" class="menu-grid"></div>
@@ -177,21 +166,18 @@
     function enterAdmin() {
         database.ref('adminPass').once('value', (snap) => {
             const correctPass = snap.val() || "123";
-            const userPass = prompt("من فضلك أدخلي كلمة السر:");
+            const userPass = prompt("كلمة السر:");
             if(userPass === correctPass) {
                 document.getElementById('adminDashboard').style.display = 'block';
                 renderMenu();
-            } else { alert("كلمة السر خطأ!"); }
+            }
         });
     }
 
     function changeAdminPass() {
         const newPass = document.getElementById('newPassInput').value;
-        if(newPass.length < 3) { alert("الباسورد قصير جداً"); return; }
-        database.ref('adminPass').set(newPass).then(() => {
-            alert("تم التغيير!");
-            document.getElementById('newPassInput').value = "";
-        });
+        if(newPass.length < 3) return;
+        database.ref('adminPass').set(newPass).then(() => { alert("تم التحديث!"); });
     }
 
     function previewImg() {
@@ -216,7 +202,6 @@
         const s = { 
             brand: document.getElementById('newBrand').value,
             slogan: document.getElementById('newSlogan').value,
-            about: document.getElementById('newAbout').value,
             wa: document.getElementById('newWA').value,
             fb: document.getElementById('newFB').value,
             ig: document.getElementById('newIG').value,
@@ -234,18 +219,15 @@
         const price = document.getElementById('pPrice').value;
         const disc = document.getElementById('pDisc').value || 0;
         if(currentImg && name && price) {
-            database.ref('items').push({ name, code, price, disc, img: currentImg }).then(() => {
-                alert("تم رفع المنتج");
-                renderMenu();
-            });
+            database.ref('items').push({ name, code, price, disc, img: currentImg }).then(() => renderMenu());
         }
     }
 
     function deleteItem(id) { if(confirm("حذف؟")) database.ref('items/' + id).remove().then(() => renderMenu()); }
-    
+
     function editItem(id, oldP, oldD) {
         const nP = prompt("السعر الجديد:", oldP);
-        const nD = prompt("الخصم الجديد %:", oldD);
+        const nD = prompt("الخصم الجديد:", oldD);
         if(nP !== null) database.ref('items/' + id).update({ price: nP, disc: nD }).then(() => renderMenu());
     }
 
@@ -265,7 +247,7 @@
                 const discVal = parseInt(item.disc || 0);
                 const finalP = discVal > 0 ? Math.round(item.price * (1 - discVal/100)) : item.price;
                 const isAdmin = document.getElementById('adminDashboard').style.display === 'block';
-                const msg = encodeURIComponent(`أهلاً، محتاج أطلب: ${item.name} ${item.code ? '(رمز: '+item.code+')' : ''} بسعر ${finalP} ج.م`);
+                const msg = encodeURIComponent(`طلب: ${item.name} ${item.code ? '('+item.code+')' : ''} بسعر ${finalP}`);
                 
                 grid.innerHTML += `
                     <div class="card">
@@ -283,7 +265,7 @@
                             <a href="https://wa.me/${globalWA}?text=${msg}" class="order-btn"><i class="fab fa-whatsapp"></i> اطلب الآن</a>
                             ${isAdmin ? `
                                 <div style="display:flex; gap:5px; margin-top:8px;">
-                                    <button onclick="editItem('${id}','${item.price}','${item.disc}')" style="flex:1; background:var(--gold); border:none; border-radius:8px; padding:5px; color:black; font-weight:bold;">تعديل</button>
+                                    <button onclick="editItem('${id}','${item.price}','${item.disc}')" style="flex:1; background:var(--gold); border:none; border-radius:8px; padding:5px; color:black;">تعديل</button>
                                     <button onclick="deleteItem('${id}')" style="flex:1; background:red; border:none; border-radius:8px; padding:5px; color:white;">حذف</button>
                                 </div>
                             ` : ''}
@@ -298,14 +280,12 @@
         if(data && data.settings) {
             const s = data.settings;
             globalWA = s.wa;
-            document.getElementById('brandTitle').innerText = s.brand || "متجري";
+            // السطر ده هو اللي بيغير اسم الموقع فوق وفي المتصفح
+            document.title = s.brand || "متجري";
+            document.getElementById('brandTitle').innerText = s.brand || "";
             document.getElementById('brandSlogan').innerText = s.slogan || "";
-            if(s.hImg) {
-                document.getElementById('siteHeader').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${s.hImg})`;
-            }
-            if(s.bImg) {
-                document.body.style.backgroundImage = `url(${s.bImg})`;
-            }
+            if(s.hImg) document.getElementById('siteHeader').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${s.hImg})`;
+            if(s.bImg) document.body.style.backgroundImage = `url(${s.bImg})`;
             document.getElementById('waLink').href = "https://wa.me/" + s.wa;
             document.getElementById('fbLink').href = s.fb || "#";
             document.getElementById('igLink').href = s.ig || "#";
