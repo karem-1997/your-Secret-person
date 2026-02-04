@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر المبدعين | الإدارة الكاملة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        :root { 
+            --pink: #ff4d6d; --gold: #ffb703; --whatsapp: #25d366;
+            --glass: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        body { 
+            font-family: 'Cairo', sans-serif; background: #080808; color: white; margin: 0; 
+            padding-bottom: 50px; background-size: cover; background-attachment: fixed; background-position: center; 
+        }
+
+        header { 
+            height: 30vh; margin: 15px; border-radius: 25px;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1550617931-e17a7b70dce2?q=80&w=1470'); 
+            background-size: cover; background-position: center; border: 1px solid var(--glass-border); 
+            backdrop-filter: blur(10px); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+
+        .logo { font-family: 'Dancing Script', cursive; font-size: clamp(2rem, 6vw, 3.5rem); color: var(--pink); margin: 0; text-shadow: 0 0 15px var(--pink); }
+        .slogan { color: var(--gold); font-size: 1rem; margin-top: 5px; }
+
+        .container { padding: 10px 3%; }
+        
+        .menu-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 12px; 
+        }
+
+        @media (min-width: 768px) { .menu-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); } }
+
+        @keyframes rotateRGB {
+            0% { border-color: #ff4d6d; box-shadow: 0 0 8px #ff4d6d; }
+            50% { border-color: #ffb703; box-shadow: 0 0 8px #ffb703; }
+            100% { border-color: #ff4d6d; box-shadow: 0 0 8px #ff4d6d; }
+        }
+
+        .card { 
+            background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px;
+            position: relative; border: 2px solid #ff4d6d; animation: rotateRGB 4s linear infinite;
+            overflow: hidden; display: flex; flex-direction: column; transition: 0.3s;
+        }
+
+        .img-box { width: 100%; aspect-ratio: 1/1; cursor: zoom-in; }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        .card-info { padding: 10px; text-align: center; }
+        .card-info h3 { margin: 5px 0 2px 0; font-size: 0.95rem; }
+        .product-code { font-size: 0.75rem; color: #aaa; margin-bottom: 5px; display: block; }
+        .current-price { color: var(--gold); font-size: 1.1rem; font-weight: bold; }
+
+        .order-btn { 
+            background: var(--whatsapp); color: white; text-decoration: none; padding: 10px; 
+            border-radius: 12px; font-size: 0.85rem; font-weight: bold; display: flex; 
+            align-items: center; justify-content: center; gap: 5px; margin-top: 10px;
+        }
+
+        .lightbox {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); backdrop-filter: blur(15px);
+            display: none; justify-content: center; align-items: center; z-index: 3000;
+        }
+        .lightbox img { max-width: 90%; max-height: 80%; border-radius: 15px; border: 2px solid var(--pink); }
+
+        #adminDashboard { 
+            display: none; background: rgba(0, 0, 0, 0.98); backdrop-filter: blur(25px);
+            border: 2px solid var(--pink); padding: 25px; border-radius: 30px; margin-bottom: 30px; 
+        }
+        .form-section input, .form-section textarea { background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; width: 100%; box-sizing: border-box; font-family: 'Cairo'; }
+        .btn { padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px; font-family: 'Cairo'; }
+        
+        .social-float { position: fixed; bottom: 20px; left: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 2000; }
+        .float-btn { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body>
+
+<header id="siteHeader">
+    <h1 id="brandTitle" class="logo">جاري التحميل...</h1>
+    <p id="brandSlogan" class="slogan"></p>
+</header>
+
+<div class="container">
+    <div id="adminDashboard">
+        <h3 style="text-align:center; color:var(--pink);">⚙️ لوحة التحكم الكاملة</h3>
+        
+        <div class="form-section">
+            <input type="text" id="newBrand" placeholder="اسم المتجر">
+            <input type="text" id="newSlogan" placeholder="شعار المتجر">
+            <textarea id="newAbout" placeholder="وصف المتجر..."></textarea>
+            <input type="text" id="newWA" placeholder="رقم الواتساب">
+            <input type="text" id="newFB" placeholder="رابط فيسبوك">
+            <input type="text" id="newIG" placeholder="رابط انستجرام">
+            <input type="text" id="newTG" placeholder="رابط تيليجرام">
+            <input type="text" id="newTK" placeholder="رابط تيك توك">
+            <button class="btn" style="background:#333; color:var(--gold)" onclick="document.getElementById('headerFile').click()">تغيير كفر الموقع</button>
+            <input type="file" id="headerFile" accept="image/*" style="display:none" onchange="previewHeader()">
+            <button class="btn" style="background:#333; color:var(--gold)" onclick="document.getElementById('bodyFile').click()">تغيير الخلفية</button>
+            <input type="file" id="bodyFile" accept="image/*" style="display:none" onchange="previewBody()">
+            <button class="btn" style="background:var(--pink); color:white" onclick="updateSettings()">حفظ بيانات المتجر</button>
+        </div>
+
+        <hr style="border-top:1px solid #333; margin:20px 0;">
+
+        <div class="form-section">
+            <label>إضافة منتج جديد:</label>
+            <button class="btn" style="background:#444; color:white" onclick="document.getElementById('imgUpload').click()">اختيار صورة المنتج</button>
+            <input type="file" id="imgUpload" accept="image/*" style="display:none" onchange="previewImg()">
+            <input type="text" id="pName" placeholder="اسم المنتج">
+            <input type="text" id="pCode" placeholder="رمز المنتج (اختياري)">
+            <input type="number" id="pPrice" placeholder="السعر">
+            <input type="number" id="pDisc" placeholder="الخصم %">
+            <button class="btn" style="background:var(--gold)" onclick="addProduct()">رفع المنتج</button>
+        </div>
+
+        <hr style="border-top:1px solid #333; margin:20px 0;">
+
+        <div class="form-section">
+            <label>إعدادات الأمان:</label>
+            <input type="password" id="newPassInput" placeholder="اكتبي الباسورد الجديد هنا">
+            <button class="btn" style="background:#555; color:white" onclick="changeAdminPass()">تحديث باسورد الدخول</button>
+        </div>
+
+        <button class="btn" style="background:#222; color:white; margin-top:20px;" onclick="location.reload()">إغلاق اللوحة</button>
+    </div>
+
+    <div id="menuGrid" class="menu-grid"></div>
+
+    <div style="text-align:center; margin-top:40px; opacity:0.3">
+        <button onclick="enterAdmin()" style="background:none; border:1px solid #444; color:white; padding:5px 15px; border-radius:20px; font-size:0.7rem; cursor:pointer;">بوابة الإدارة</button>
+    </div>
+</div>
+
+<div id="lightbox" class="lightbox" onclick="this.style.display='none'">
+    <img id="lightboxImg" src="">
+</div>
+
+<div class="social-float">
+    <a href="#" id="waLink" class="float-btn" style="color:#25d366" target="_blank"><i class="fab fa-whatsapp"></i></a>
+    <a href="#" id="tgLink" class="float-btn" style="color:#0088cc" target="_blank"><i class="fab fa-telegram-plane"></i></a>
+    <a href="#" id="tkLink" class="float-btn" style="color:white" target="_blank"><i class="fab fa-tiktok"></i></a>
+    <a href="#" id="igLink" class="float-btn" style="color:#e1306c" target="_blank"><i class="fab fa-instagram"></i></a>
+    <a href="#" id="fbLink" class="float-btn" style="color:#1877f2" target="_blank"><i class="fab fa-facebook-f"></i></a>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBPF_FD8xXwuiIaN7_T8yFTNx_RkVIgUh4",
+        authDomain: "yasminacake-48d62.firebaseapp.com",
+        databaseURL: "https://yasminacake-48d62-default-rtdb.firebaseio.com",
+        projectId: "yasminacake-48d62",
+        storageBucket: "yasminacake-48d62.firebasestorage.app",
+        messagingSenderId: "157210422639",
+        appId: "1:157210422639:web:b24ad405e45065df650c9a"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    let currentImg = "", hImg = "", bImg = "", globalWA = "";
+
+    function enterAdmin() {
+        database.ref('adminPass').once('value', (snap) => {
+            const correctPass = snap.val() || "123";
+            const userPass = prompt("من فضلك أدخلي كلمة السر:");
+            if(userPass === correctPass) {
+                document.getElementById('adminDashboard').style.display = 'block';
+                renderMenu();
+            } else { alert("كلمة السر خطأ!"); }
+        });
+    }
+
+    function changeAdminPass() {
+        const newPass = document.getElementById('newPassInput').value;
+        if(newPass.length < 3) {
+            alert("الباسورد لازم يكون أكتر من 3 حروف أو أرقام");
+            return;
+        }
+        database.ref('adminPass').set(newPass).then(() => {
+            alert("تم تغيير الباسورد بنجاح! استخدميه في المرة القادمة.");
+            document.getElementById('newPassInput').value = "";
+        });
+    }
+
+    function previewImg() {
+        const reader = new FileReader();
+        reader.onloadend = () => currentImg = reader.result;
+        reader.readAsDataURL(document.getElementById('imgUpload').files[0]);
+    }
+
+    function previewHeader() {
+        const reader = new FileReader();
+        reader.onloadend = () => hImg = reader.result;
+        reader.readAsDataURL(document.getElementById('headerFile').files[0]);
+    }
+
+    function previewBody() {
+        const reader = new FileReader();
+        reader.onloadend = () => bImg = reader.result;
+        reader.readAsDataURL(document.getElementById('bodyFile').files[0]);
+    }
+
+    function updateSettings() {
+        const s = { 
+            brand: document.getElementById('newBrand').value,
+            slogan: document.getElementById('newSlogan').value,
+            about: document.getElementById('newAbout').value,
+            wa: document.getElementById('newWA').value,
+            fb: document.getElementById('newFB').value,
+            ig: document.getElementById('newIG').value,
+            tg: document.getElementById('newTG').value,
+            tk: document.getElementById('newTK').value
+        };
+        if(hImg) s.hImg = hImg;
+        if(bImg) s.bImg = bImg;
+        database.ref('settings').update(s).then(() => { alert("تم الحفظ!"); location.reload(); });
+    }
+
+    function addProduct() {
+        const name = document.getElementById('pName').value;
+        const code = document.getElementById('pCode').value;
+        const price = document.getElementById('pPrice').value;
+        const disc = document.getElementById('pDisc').value || 0;
+        if(currentImg && name && price) {
+            database.ref('items').push({ name, code, price, disc, img: currentImg }).then(() => renderMenu());
+        }
+    }
+
+    function deleteItem(id) { if(confirm("حذف؟")) database.ref('items/' + id).remove().then(() => renderMenu()); }
+    
+    function editItem(id, oldP, oldD) {
+        const nP = prompt("السعر الجديد:", oldP);
+        const nD = prompt("الخصم الجديد %:", oldD);
+        if(nP !== null) database.ref('items/' + id).update({ price: nP, disc: nD }).then(() => renderMenu());
+    }
+
+    function openLightbox(src) {
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightbox').style.display = 'flex';
+    }
+
+    function renderMenu() {
+        database.ref('items').once('value', (snapshot) => {
+            const items = snapshot.val();
+            const grid = document.getElementById('menuGrid');
+            grid.innerHTML = '';
+            if(!items) return;
+            Object.keys(items).forEach(id => {
+                const item = items[id];
+                const discVal = parseInt(item.disc || 0);
+                const finalP = discVal > 0 ? Math.round(item.price * (1 - discVal/100)) : item.price;
+                const isAdmin = document.getElementById('adminDashboard').style.display === 'block';
+                const msg = encodeURIComponent(`أهلاً، محتاج أطلب: ${item.name} ${item.code ? '(رمز: '+item.code+')' : ''} بسعر ${finalP} ج.م`);
+                
+                grid.innerHTML += `
+                    <div class="card">
+                        <div class="img-box" onclick="openLightbox('${item.img}')"><img src="${item.img}"></div>
+                        <div class="card-info">
+                            <h3>${item.name}</h3>
+                            ${item.code ? `<span class="product-code">رمز: ${item.code}</span>` : ''}
+                            <div class="current-price">${finalP} ج.م</div>
+                            <a href="https://wa.me/${globalWA}?text=${msg}" class="order-btn"><i class="fab fa-whatsapp"></i> اطلب الآن</a>
+                            ${isAdmin ? `
+                                <div style="display:flex; gap:5px; margin-top:8px;">
+                                    <button onclick="editItem('${id}','${item.price}','${item.disc}')" style="flex:1; background:var(--gold); border:none; border-radius:8px; padding:5px; color:black; font-weight:bold;">تعديل</button>
+                                    <button onclick="deleteItem('${id}')" style="flex:1; background:red; border:none; border-radius:8px; padding:5px; color:white;">حذف</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>`;
+            });
+        });
+    }
+
+    database.ref().on('value', (snapshot) => {
+        const data = snapshot.val();
+        if(data && data.settings) {
+            const s = data.settings;
+            globalWA = s.wa;
+            document.getElementById('brandTitle').innerText = s.brand || "اسم المتجر";
+            document.getElementById('brandSlogan').innerText = s.slogan || "";
+            if(s.hImg) document.getElementById('siteHeader').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${s.hImg})`;
+            if(s.bImg) document.body.style.backgroundImage = `url(${s.bImg})`;
+            document.getElementById('waLink').href = "https://wa.me/" + s.wa;
+            document.getElementById('fbLink').href = s.fb || "#";
+            document.getElementById('igLink').href = s.ig || "#";
+            document.getElementById('tgLink').href = s.tg || "#";
+            document.getElementById('tkLink').href = s.tk || "#";
+        }
+        renderMenu();
+    });
+</script>
+</body>
+</html>
+
